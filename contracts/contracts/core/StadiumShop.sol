@@ -178,6 +178,7 @@ contract StadiumShop is WicketChainBase, IStadiumShop, AccessControl, Reentrancy
             isActive: true
         });
         ownerShopId[msg.sender] = shopId;
+        emit ShopRegistered(shopId, msg.sender, name);
 
         for (uint256 i = 0; i < venueIds.length; i++) {
             shopVenues[shopId][venueIds[i]] = ShopVenueInfo({
@@ -188,8 +189,6 @@ contract StadiumShop is WicketChainBase, IStadiumShop, AccessControl, Reentrancy
             shopVenueIds[shopId].push(venueIds[i]);
             emit VenueAddedToShop(shopId, venueIds[i], locations[i]);
         }
-
-        emit ShopRegistered(shopId, msg.sender, name);
     }
 
     /// @notice Admin approves a shop. Products become visible to fans.
