@@ -117,6 +117,8 @@ contract StadiumShop is WicketChainBase, IStadiumShop, AccessControl, Reentrancy
     event OrderRefunded(uint256 indexed orderId, address indexed buyer, uint256 refundAmount);
     event OrderConfirmed(uint256 indexed orderId);
     event OrderCollected(uint256 indexed orderId);
+    event ShopUpdated(uint256 indexed shopId, string name, string description, string imageURI);
+
 
     /// @notice Initializes StadiumShop with dependencies
     /// @param _vault The WicketChain Vault address
@@ -271,6 +273,26 @@ contract StadiumShop is WicketChainBase, IStadiumShop, AccessControl, Reentrancy
         if (shopId == 0) revert ShopNotRegistered(msg.sender);
         shops[shopId].isActive = !shops[shopId].isActive;
         emit ShopActiveToggled(shopId, shops[shopId].isActive);
+    }
+
+    /// @notice Allows the shop owner to update name, description, and imageURI.
+    /// @param name New shop name
+    /// @param description New shop description
+    /// @param imageURI New shop image URI
+    function updateShop(
+        string calldata name,
+        string calldata description,
+        string calldata imageURI
+    ) external {
+        uint256 shopId = ownerShopId[msg.sender];
+        if (shopId == 0) revert ShopNotRegistered(msg.sender);
+
+        Shop storage s = shops[shopId];
+        s.name        = name;
+        s.description = description;
+        s.imageURI    = imageURI;
+
+        emit ShopUpdated(shopId, name, description, imageURI);
     }
 
     // ═══════════════════════════════════════════════════════════

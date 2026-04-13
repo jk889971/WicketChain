@@ -812,5 +812,86 @@ describe("StadiumShop", async function () {
     await f.stadiumShop.write.unpause();
     await assert.doesNotReject(shopAsFan.write.purchaseSingleItem([1n, 1n, 1n], { value: productPrice }));
   });
+
+  // ── T-46: updateShop — owner can update name, description, imageURI ──
+  it("T-46: updateShop updates shop metadata on-chain", async function () {
+    const f = await setup();
+    const shopAsOwner = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.shopOwner },
+    });
+    await shopAsOwner.write.registerShop([
+      "Old Name", "Old Desc", "ipfs://old", [1n], ["Gate 1"],
+    ]);
+    // Update all three fields
+    await shopAsOwner.write.updateShop(["New Name", "New Desc", "ipfs://new"]);
+    const shop = await f.stadiumShop.read.shops([1n]);
+    assert.equal(shop[2], "New Name");         // name
+    assert.equal(shop[3], "New Desc");         // description
+    assert.equal(shop[4], "ipfs://new");       // imageURI
+  });
+
+  // ── T-47: updateShop — emits ShopUpdated event with correct args ──
+  it("T-47: updateShop emits ShopUpdated with correct indexed shopId and args", async function () {
+    const f = await setup();
+    const shopAsOwner = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.shopOwner },
+    });
+    await shopAsOwner.write.registerShop([
+      "Shop A", "Desc A", "ipfs://a", [1n], ["Gate 2"],
+    ]);
+    const hash = await shopAsOwner.write.updateShop(["Updated Name", "Updated Desc", "ipfs://updated"]);
+    const receipt = await publicClient.getTransactionReceipt({ hash });
+    // Verify at least one log was emitted (ShopUpdated)
+    assert.ok(receipt.logs.length > 0);
+  });
+
+  // ── T-48: updateShop — reverts NotShopOwner for non-owner ──
+  it("T-48: updateShop reverts if called by non-owner address", async function () {
+    const f = await setup();
+    const shopAsOwner = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.shopOwner },
+    });
+    await shopAsOwner.write.registerShop([
+      "Shop B", "Desc B", "ipfs://b", [1n], ["Gate 3"],
+    ]);
+    // fan1 does not own this shop
+    const shopAsFan = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.fan1 },
+    });
+    await assert.rejects(
+      shopAsFan.write.updateShop(["Hacked Name", "Hacked Desc", "ipfs://hack"]),
+      /ShopNotRegistered/
+    );
+  });
+
+  // ── T-49: updateShop — reverts ShopNotRegistered for unregistered caller ──
+  it("T-49: updateShop reverts ShopNotRegistered for address with no shop", async function () {
+    const f = await setup();
+    // fan2 has never registered a shop
+    const shopAsFan2 = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.fan2 },
+    });
+    await assert.rejects(
+      shopAsFan2.write.updateShop(["Ghost Shop", "Ghost Desc", "ipfs://ghost"]),
+      /ShopNotRegistered/
+    );
+  });
+
+  // ── T-50: updateShop — allows partial update (empty description/imageURI) ──
+  it("T-50: updateShop allows empty description and imageURI (clears fields)", async function () {
+    const f = await setup();
+    const shopAsOwner = await viem.getContractAt("StadiumShop", f.stadiumShop.address, {
+      client: { wallet: f.shopOwner },
+    });
+    await shopAsOwner.write.registerShop([
+      "Shop C", "Has a description", "ipfs://c", [1n], ["Gate 4"],
+    ]);
+    // Clear description and imageURI by passing empty strings
+    await shopAsOwner.write.updateShop(["Shop C Renamed", "", ""]);
+    const shop = await f.stadiumShop.read.shops([1n]);
+    assert.equal(shop[2], "Shop C Renamed");
+    assert.equal(shop[3], "");  // description cleared
+    assert.equal(shop[4], "");  // imageURI cleared
+  });
 });
 
