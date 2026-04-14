@@ -1,0 +1,23 @@
+// StadiumShop — Event ABI fragments only
+export const StadiumShopEvents = [
+  "event ShopRegistered(uint256 indexed shopId, address indexed owner, string name)",
+  "event ShopApproved(uint256 indexed shopId)",
+  "event ShopRejected(uint256 indexed shopId, string reason)",
+  "event ShopActiveToggled(uint256 indexed shopId, bool isActive)",
+  "event ShopPaused(uint256 indexed shopId, bool isActive)",
+  "event ShopVenueRemoved(uint256 indexed shopId, uint256 indexed venueId)",
+  "event ProductAdded(uint256 indexed productId, uint256 indexed shopId, uint256 indexed venueId, string name, uint256 price)",
+  "event ProductUpdated(uint256 indexed productId, string name, uint256 price)",
+  "event InventoryUpdated(uint256 indexed productId, uint256 newUnits)",
+  "event ProductActiveToggled(uint256 indexed productId, bool isActive)",
+  "event ItemPurchased(uint256 indexed orderId, uint256 indexed ticketTokenId, uint256 productId, uint256 quantity, address buyer)",
+  "event CartCheckout(address indexed buyer, uint256 orderCount, uint256 totalPaid)",
+  "event OrderCancelled(uint256 indexed orderId, address indexed buyer, uint256 refundAmount)",
+  "event OrderCancelledByVendor(uint256 indexed orderId, uint256 indexed shopId)",
+  "event OrderRefunded(uint256 indexed orderId, address indexed buyer, uint256 refundAmount)",
+  "event OrderConfirmed(uint256 indexed orderId)",
+  "event OrderCollected(uint256 indexed orderId)",
+  "event VenueAddedToShop(uint256 indexed shopId, uint256 indexed venueId, string location)",
+  "event VenueLocationUpdated(uint256 indexed shopId, uint256 indexed venueId, string newLocation)",
+  "event ShopUpdated(uint256 indexed shopId, string name, string description, string imageURI)",
+] as const;
