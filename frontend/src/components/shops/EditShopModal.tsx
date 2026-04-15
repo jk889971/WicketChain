@@ -132,7 +132,7 @@ export function EditShopModal({
                 Edit Shop
               </h2>
               <p className="text-xs text-[#ababab] mt-1">
-                Update your shop's identifying details on-chain.
+                Update your shop&apos;s identifying details on-chain.
               </p>
             </div>
 
